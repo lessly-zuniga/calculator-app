@@ -3,7 +3,6 @@ import type {
   BinaryOperation,
   CalculatorButtonAction,
   CalculatorOperation,
-  UnaryOperation,
 } from '../components/calculator/calculator.types';
 import {
   add,
@@ -36,16 +35,12 @@ const binaryCalculations: Record<
   power: (leftOperand, rightOperand) => power([leftOperand, rightOperand]),
 };
 
-const unaryCalculations: Record<UnaryOperation, (operand: number) => Promise<number>> = {
-  squareRoot: (operand) => squareRoot([operand]),
-  percentage: (operand) => percentage([operand]),
-};
-
 export function useCalculator() {
   const [currentInput, setCurrentInput] = useState('0');
   const [selectedOperation, setSelectedOperation] = useState<BinaryOperation | null>(null);
   const [firstOperand, setFirstOperand] = useState<number | null>(null);
   const [secondOperandStarted, setSecondOperandStarted] = useState(false);
+  const [resolvedSecondOperand, setResolvedSecondOperand] = useState<number | null>(null);
   const [expression, setExpression] = useState('');
   const [result, setResult] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -53,9 +48,16 @@ export function useCalculator() {
 
   function enterDigit(digit: string) {
     const shouldStartSecondOperand = selectedOperation !== null && !secondOperandStarted;
+    const shouldReplacePercentageOperand = resolvedSecondOperand !== null;
     setCurrentInput((value) =>
-      shouldStartSecondOperand || value === '0' || result !== null ? digit : value + digit,
+      shouldStartSecondOperand || shouldReplacePercentageOperand || value === '0' || result !== null
+        ? digit
+        : value + digit,
     );
+    if (shouldReplacePercentageOperand && selectedOperation !== null && firstOperand !== null) {
+      setExpression(`${firstOperand} ${operationLabels[selectedOperation]}`);
+    }
+    setResolvedSecondOperand(null);
     if (selectedOperation !== null) {
       setSecondOperandStarted(true);
     }
@@ -65,12 +67,17 @@ export function useCalculator() {
 
   function enterDecimal() {
     const shouldStartSecondOperand = selectedOperation !== null && !secondOperandStarted;
+    const shouldReplacePercentageOperand = resolvedSecondOperand !== null;
     setCurrentInput((value) => {
-      if (result !== null || shouldStartSecondOperand) {
+      if (result !== null || shouldStartSecondOperand || shouldReplacePercentageOperand) {
         return '0.';
       }
       return value.includes('.') ? value : `${value}.`;
     });
+    if (shouldReplacePercentageOperand && selectedOperation !== null && firstOperand !== null) {
+      setExpression(`${firstOperand} ${operationLabels[selectedOperation]}`);
+    }
+    setResolvedSecondOperand(null);
     if (selectedOperation !== null) {
       setSecondOperandStarted(true);
     }
@@ -83,6 +90,7 @@ export function useCalculator() {
     setSelectedOperation(null);
     setFirstOperand(null);
     setSecondOperandStarted(false);
+    setResolvedSecondOperand(null);
     setExpression('');
     setResult(null);
     setError(null);
@@ -103,6 +111,7 @@ export function useCalculator() {
     setSelectedOperation(operation);
     setExpression(`${currentInput} ${operationLabels[operation]}`);
     setSecondOperandStarted(false);
+    setResolvedSecondOperand(null);
     if (selectedOperation !== null) {
       setCurrentInput('0');
     }
@@ -110,10 +119,42 @@ export function useCalculator() {
     setError(null);
   }
 
-  async function runUnaryOperation(operation: UnaryOperation) {
+  async function runSquareRoot() {
     const operand = Number(currentInput);
-    setExpression(`${operationLabels[operation]}(${currentInput})`);
-    await runCalculation(() => unaryCalculations[operation](operand));
+    setExpression(`${operationLabels.squareRoot}(${currentInput})`);
+    await runCalculation(() => squareRoot([operand]));
+  }
+
+  async function applyPercentage() {
+    const percentageInput = Number(currentInput);
+
+    if (selectedOperation === null || firstOperand === null) {
+      setExpression(`${currentInput}%`);
+      await runCalculation(() => percentage([percentageInput]));
+      return;
+    }
+
+    setExpression(`${firstOperand} ${operationLabels[selectedOperation]} ${currentInput}%`);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const decimalPercentage = await percentage([percentageInput]);
+      const effectiveOperand =
+        selectedOperation === 'add' || selectedOperation === 'subtract'
+          ? await multiply([firstOperand, decimalPercentage])
+          : decimalPercentage;
+
+      setResolvedSecondOperand(effectiveOperand);
+      setSecondOperandStarted(true);
+      setResult(null);
+    } catch (calculationError) {
+      setError(
+        calculationError instanceof Error ? calculationError.message : 'Unable to calculate result',
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function calculateResult() {
@@ -121,12 +162,16 @@ export function useCalculator() {
       return;
     }
 
-    const secondOperand = secondOperandStarted ? Number(currentInput) : 0;
-    setExpression(`${firstOperand} ${operationLabels[selectedOperation]} ${secondOperand}`);
+    const secondOperand =
+      resolvedSecondOperand ?? (secondOperandStarted ? Number(currentInput) : 0);
+    if (resolvedSecondOperand === null) {
+      setExpression(`${firstOperand} ${operationLabels[selectedOperation]} ${secondOperand}`);
+    }
     await runCalculation(() => binaryCalculations[selectedOperation](firstOperand, secondOperand));
     setSelectedOperation(null);
     setFirstOperand(null);
     setSecondOperandStarted(false);
+    setResolvedSecondOperand(null);
   }
 
   async function runCalculation(calculate: () => Promise<number>) {
@@ -158,8 +203,10 @@ export function useCalculator() {
         clear();
         break;
       case 'operation':
-        if (action.operation === 'squareRoot' || action.operation === 'percentage') {
-          void runUnaryOperation(action.operation);
+        if (action.operation === 'squareRoot') {
+          void runSquareRoot();
+        } else if (action.operation === 'percentage') {
+          void applyPercentage();
         } else {
           selectBinaryOperation(action.operation);
         }
