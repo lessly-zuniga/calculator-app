@@ -9,6 +9,16 @@ import (
 )
 
 func main() {
+	mux := newMux()
+
+	log.Println("Calculator API running on http://localhost:8080")
+
+	if err := http.ListenAndServe(":8080", mux); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func newMux() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/v1/add", handler.Add)
@@ -44,9 +54,5 @@ func main() {
 		}
 	})
 
-	log.Println("Calculator API running on http://localhost:8080")
-
-	if err := http.ListenAndServe(":8080", mux); err != nil {
-		log.Fatal(err)
-	}
+	return mux
 }
