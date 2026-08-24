@@ -58,3 +58,11 @@ func SquareRoot(operands []float64) (float64, error) {
 
 	return math.Sqrt(operands[0]), nil
 }
+
+func Percentage(operands []float64) (float64, error) {
+	if len(operands) != 1 {
+		return 0, ErrInvalidOperandCount
+	}
+
+	return operands[0] / 100, nil
+}
