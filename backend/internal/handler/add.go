@@ -56,6 +56,11 @@ func Add(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := calculator.Add(request.Operands)
+	if errors.Is(err, calculator.ErrInvalidResult) {
+		writeInvalidResult(w)
+		return
+	}
+
 	if err != nil {
 		writeInvalidRequest(w)
 		return
@@ -82,10 +87,26 @@ func writeInvalidRequest(w http.ResponseWriter) {
 	})
 }
 
+func writeInvalidResult(w http.ResponseWriter) {
+	writeJSON(w, http.StatusUnprocessableEntity, errorResponse{
+		Error: apiError{
+			Code:    "INVALID_RESULT",
+			Message: "Calculation produced an invalid numeric result",
+		},
+	})
+}
+
 func writeJSON(w http.ResponseWriter, status int, value any) {
+	data, err := json.Marshal(value)
+	if err != nil {
+		log.Printf("failed to encode response: %v", err)
+		status = http.StatusInternalServerError
+		data = []byte(`{"error":{"code":"INTERNAL_ERROR","message":"Failed to encode response"}}`)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(value); err != nil {
-		log.Printf("failed to encode response: %v", err)
+	if _, err := w.Write(append(data, '\n')); err != nil {
+		log.Printf("failed to write response: %v", err)
 	}
 }

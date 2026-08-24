@@ -53,6 +53,11 @@ func Divide(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if errors.Is(err, calculator.ErrInvalidResult) {
+		writeInvalidResult(w)
+		return
+	}
+
 	if err != nil {
 		writeInvalidRequest(w)
 		return

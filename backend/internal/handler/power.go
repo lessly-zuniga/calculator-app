@@ -8,15 +8,15 @@ import (
 	"github.com/lesslyzuniga/calculator-app/backend/internal/calculator"
 )
 
-type percentageRequest struct {
+type powerRequest struct {
 	Operands []float64 `json:"operands"`
 }
 
-type percentageResponse struct {
+type powerResponse struct {
 	Result float64 `json:"result"`
 }
 
-func Percentage(w http.ResponseWriter, r *http.Request) {
+func Power(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost)
 		writeJSON(w, http.StatusMethodNotAllowed, errorResponse{
@@ -28,39 +28,30 @@ func Percentage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var request percentageRequest
+	var request powerRequest
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
 	if err := decoder.Decode(&request); err != nil {
-		writePercentageInvalidRequest(w)
+		writeInvalidRequest(w)
 		return
 	}
 
 	if err := ensureEndOfBody(decoder); err != nil {
-		writePercentageInvalidRequest(w)
+		writeInvalidRequest(w)
 		return
 	}
 
-	result, err := calculator.Percentage(request.Operands)
+	result, err := calculator.Power(request.Operands)
 	if errors.Is(err, calculator.ErrInvalidResult) {
 		writeInvalidResult(w)
 		return
 	}
 
 	if err != nil {
-		writePercentageInvalidRequest(w)
+		writeInvalidRequest(w)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, percentageResponse{Result: result})
-}
-
-func writePercentageInvalidRequest(w http.ResponseWriter) {
-	writeJSON(w, http.StatusBadRequest, errorResponse{
-		Error: apiError{
-			Code:    "INVALID_REQUEST",
-			Message: "Exactly one numeric operand is required",
-		},
-	})
+	writeJSON(w, http.StatusOK, powerResponse{Result: result})
 }

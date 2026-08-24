@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/lesslyzuniga/calculator-app/backend/internal/calculator"
@@ -42,6 +43,11 @@ func Subtract(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := calculator.Subtract(request.Operands)
+	if errors.Is(err, calculator.ErrInvalidResult) {
+		writeInvalidResult(w)
+		return
+	}
+
 	if err != nil {
 		writeInvalidRequest(w)
 		return

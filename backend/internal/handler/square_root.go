@@ -53,6 +53,11 @@ func SquareRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if errors.Is(err, calculator.ErrInvalidResult) {
+		writeInvalidResult(w)
+		return
+	}
+
 	if err != nil {
 		writeSquareRootInvalidRequest(w)
 		return
