@@ -9,16 +9,16 @@ type CalculatorKeypadProps = {
 const buttons: CalculatorButtonDefinition[] = [
   { label: 'AC', accessibleLabel: 'All clear', variant: 'function', action: { type: 'clear' } },
   {
-    label: '±',
-    accessibleLabel: 'Toggle positive or negative',
-    variant: 'function',
-    disabled: true,
-  },
-  {
     label: '%',
     accessibleLabel: 'Percentage',
     variant: 'function',
     action: { type: 'operation', operation: 'percentage' },
+  },
+  {
+    label: '√x',
+    accessibleLabel: 'Square root',
+    variant: 'function',
+    action: { type: 'operation', operation: 'squareRoot' },
   },
   {
     label: '÷',
@@ -66,28 +66,17 @@ const buttons: CalculatorButtonDefinition[] = [
 
 export function CalculatorKeypad({ disabled, onAction }: CalculatorKeypadProps) {
   return (
-    <div className="calculator-controls">
-      <div className="calculator-keypad__secondary">
+    <div className="calculator-keypad" aria-label="Calculator keypad">
+      {buttons.map((button) => (
         <CalculatorButton
-          label="√x"
-          accessibleLabel="Square root"
-          variant="function"
+          key={button.label}
+          label={button.label}
+          accessibleLabel={button.accessibleLabel}
+          variant={button.variant}
           disabled={disabled}
-          onPress={() => onAction({ type: 'operation', operation: 'squareRoot' })}
+          onPress={() => onAction(button.action)}
         />
-      </div>
-      <div className="calculator-keypad" aria-label="Calculator keypad">
-        {buttons.map((button) => (
-          <CalculatorButton
-            key={button.label}
-            label={button.label}
-            accessibleLabel={button.accessibleLabel}
-            variant={button.variant}
-            disabled={disabled || button.disabled}
-            onPress={() => button.action && onAction(button.action)}
-          />
-        ))}
-      </div>
+      ))}
     </div>
   );
 }

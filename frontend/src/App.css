@@ -63,25 +63,6 @@
   line-height: 1.35;
 }
 
-.calculator-controls {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.calculator-keypad__secondary {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.calculator-keypad__secondary .calculator-button {
-  width: auto;
-  min-width: 4.5rem;
-  min-height: 2.5rem;
-  padding: 0.5rem 1rem;
-  aspect-ratio: auto;
-  font-size: 1rem;
-}
-
 .calculator-keypad {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -215,15 +196,6 @@
     font-size: clamp(2.75rem, 8dvh, 4rem);
   }
 
-  .calculator-controls {
-    gap: clamp(0.4rem, 1.25dvh, 0.65rem);
-  }
-
-  .calculator-keypad__secondary .calculator-button {
-    min-height: clamp(2.15rem, 5.5dvh, 2.5rem);
-    padding-block: 0.35rem;
-  }
-
   .calculator-button {
     min-height: 3rem;
   }
@@ -258,13 +230,6 @@
 
   .calculator-display__value {
     font-size: clamp(2.25rem, 7.5dvh, 3rem);
-  }
-
-  .calculator-keypad__secondary .calculator-button {
-    min-width: 3.75rem;
-    min-height: 2rem;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.9rem;
   }
 
   .calculator-button {

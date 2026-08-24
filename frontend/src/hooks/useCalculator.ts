@@ -45,24 +45,35 @@ export function useCalculator() {
   const [currentInput, setCurrentInput] = useState('0');
   const [selectedOperation, setSelectedOperation] = useState<BinaryOperation | null>(null);
   const [firstOperand, setFirstOperand] = useState<number | null>(null);
+  const [secondOperandStarted, setSecondOperandStarted] = useState(false);
   const [expression, setExpression] = useState('');
   const [result, setResult] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function enterDigit(digit: string) {
-    setCurrentInput((value) => (value === '0' || result !== null ? digit : value + digit));
+    const shouldStartSecondOperand = selectedOperation !== null && !secondOperandStarted;
+    setCurrentInput((value) =>
+      shouldStartSecondOperand || value === '0' || result !== null ? digit : value + digit,
+    );
+    if (selectedOperation !== null) {
+      setSecondOperandStarted(true);
+    }
     setResult(null);
     setError(null);
   }
 
   function enterDecimal() {
+    const shouldStartSecondOperand = selectedOperation !== null && !secondOperandStarted;
     setCurrentInput((value) => {
-      if (result !== null) {
+      if (result !== null || shouldStartSecondOperand) {
         return '0.';
       }
       return value.includes('.') ? value : `${value}.`;
     });
+    if (selectedOperation !== null) {
+      setSecondOperandStarted(true);
+    }
     setResult(null);
     setError(null);
   }
@@ -71,17 +82,30 @@ export function useCalculator() {
     setCurrentInput('0');
     setSelectedOperation(null);
     setFirstOperand(null);
+    setSecondOperandStarted(false);
     setExpression('');
     setResult(null);
     setError(null);
   }
 
   function selectBinaryOperation(operation: BinaryOperation) {
+    if (selectedOperation !== null && firstOperand !== null && !secondOperandStarted) {
+      setSelectedOperation(operation);
+      setExpression(`${firstOperand} ${operationLabels[operation]}`);
+      setCurrentInput(String(firstOperand));
+      setResult(null);
+      setError(null);
+      return;
+    }
+
     const operand = Number(currentInput);
     setFirstOperand(operand);
     setSelectedOperation(operation);
     setExpression(`${currentInput} ${operationLabels[operation]}`);
-    setCurrentInput('0');
+    setSecondOperandStarted(false);
+    if (selectedOperation !== null) {
+      setCurrentInput('0');
+    }
     setResult(null);
     setError(null);
   }
@@ -97,11 +121,12 @@ export function useCalculator() {
       return;
     }
 
-    const secondOperand = Number(currentInput);
-    setExpression(`${firstOperand} ${operationLabels[selectedOperation]} ${currentInput}`);
+    const secondOperand = secondOperandStarted ? Number(currentInput) : 0;
+    setExpression(`${firstOperand} ${operationLabels[selectedOperation]} ${secondOperand}`);
     await runCalculation(() => binaryCalculations[selectedOperation](firstOperand, secondOperand));
     setSelectedOperation(null);
     setFirstOperand(null);
+    setSecondOperandStarted(false);
   }
 
   async function runCalculation(calculate: () => Promise<number>) {

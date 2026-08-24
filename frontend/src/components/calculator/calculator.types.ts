@@ -15,6 +15,5 @@ export type CalculatorButtonDefinition = {
   label: string;
   accessibleLabel?: string;
   variant: CalculatorButtonVariant;
-  action?: CalculatorButtonAction;
-  disabled?: boolean;
+  action: CalculatorButtonAction;
 };
