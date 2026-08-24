@@ -12,6 +12,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/v1/add", handler.Add)
+	mux.HandleFunc("/api/v1/divide", handler.Divide)
 	mux.HandleFunc("/api/v1/multiply", handler.Multiply)
 	mux.HandleFunc("/api/v1/subtract", handler.Subtract)
 	mux.HandleFunc("/api/v1/health", func(w http.ResponseWriter, r *http.Request) {
