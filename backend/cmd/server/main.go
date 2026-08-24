@@ -14,6 +14,7 @@ func main() {
 	mux.HandleFunc("/api/v1/add", handler.Add)
 	mux.HandleFunc("/api/v1/divide", handler.Divide)
 	mux.HandleFunc("/api/v1/multiply", handler.Multiply)
+	mux.HandleFunc("/api/v1/square-root", handler.SquareRoot)
 	mux.HandleFunc("/api/v1/subtract", handler.Subtract)
 	mux.HandleFunc("/api/v1/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
