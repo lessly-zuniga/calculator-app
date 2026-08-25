@@ -15,6 +15,18 @@ Calculator App is a full-stack web calculator with a React and TypeScript fronte
 - Frontend unit tests and backend domain and HTTP tests
 - Dockerized full-stack execution through Docker Compose
 
+## Screenshots
+
+The calculator adapts across desktop, tablet, and mobile viewports while preserving the same controls and responsive layout.
+
+### Desktop
+
+
+### Tablet
+
+
+### Mobile 
+
 ## Tech Stack
 
 ### Frontend
