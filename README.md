@@ -21,11 +21,17 @@ The calculator adapts across desktop, tablet, and mobile viewports while preserv
 
 ### Desktop
 
+<img width="1440" height="779" alt="image" src="https://github.com/user-attachments/assets/d20acae9-7442-445a-b27c-a1fea41e9134" />
 
 ### Tablet
 
+<img width="446" height="649" alt="image" src="https://github.com/user-attachments/assets/ee80518d-bd94-4187-8100-ef587d20d0c9" />
+
 
 ### Mobile 
+
+<img width="317" height="687" alt="image" src="https://github.com/user-attachments/assets/601e98ef-781e-4156-b008-5e0718cb031b" />
+
 
 ## Tech Stack
 
