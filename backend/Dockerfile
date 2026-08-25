@@ -12,11 +12,13 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
     -o /out/calculator-api \
     ./cmd/server
 
-FROM scratch
+FROM alpine:3.23
+
+RUN addgroup --system app && adduser --system --ingroup app app
 
 COPY --from=build /out/calculator-api /calculator-api
 
-USER 65532:65532
+USER app
 
 EXPOSE 8080
 
